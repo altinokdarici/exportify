@@ -11,6 +11,7 @@ export interface UsageData {
 export interface FixOptions {
   cwd: string;
   dryRun?: boolean;
+  packageName?: string;
 }
 
 export interface ExportsMap {
@@ -24,4 +25,9 @@ export interface ExportsMap {
         browser?: string;
         source?: string;
       };
+}
+
+export interface PackageInfo {
+  name: string;
+  exports?: ExportsMap;
 }

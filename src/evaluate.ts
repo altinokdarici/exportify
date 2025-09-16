@@ -2,7 +2,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { glob } from 'glob';
 import { existsSync } from 'fs';
-import type { UsageData } from './types.js';
+import type { UsageData, PackageInfo, ExportsMap } from './types.js';
 
 // Pre-compiled regex for performance
 const IMPORT_REGEX =
@@ -11,17 +11,15 @@ const IMPORT_REGEX =
 export async function evaluateUsage(
   cwd: string,
   usageFile: string,
-  options: { mainRepo?: string } = {}
+  options: { mainRepo?: string; privateOnly?: boolean } = {}
 ): Promise<void> {
   console.log(`Scanning imports in: ${cwd}`);
 
   // Discover packages in main repo (defaults to cwd if not specified)
   const mainRepoPath = options.mainRepo || cwd;
-  const mainRepoPackages = await discoverMainRepoPackages(mainRepoPath);
+  const mainRepoPackages = await discoverMainRepoPackages(mainRepoPath, options.privateOnly);
   console.log(`Found ${mainRepoPackages.size} packages in main repo: ${mainRepoPath}`);
 
-  // If scanning a different repo, only track imports to main repo packages
-  const isConsumerRepo = options.mainRepo && options.mainRepo !== cwd;
 
   // Load existing usage data if it exists
   let usageData: UsageData = {};
@@ -77,7 +75,7 @@ export async function evaluateUsage(
 
     // Process imports and update usage data
     for (const importPath of batchImports) {
-      const packageInfo = parseImportPath(importPath, isConsumerRepo ? mainRepoPackages : null);
+      const packageInfo = parseImportPath(importPath, mainRepoPackages);
       if (packageInfo) {
         totalImports++;
         updateUsageData(usageData, packageInfo, dependencies, devDependencies);
@@ -125,8 +123,8 @@ async function extractImports(filePath: string): Promise<string[]> {
   }
 }
 
-async function discoverMainRepoPackages(mainRepoPath: string): Promise<Set<string>> {
-  const packages = new Set<string>();
+async function discoverMainRepoPackages(mainRepoPath: string, privateOnly: boolean = false): Promise<Map<string, PackageInfo>> {
+  const packages = new Map<string, PackageInfo>();
 
   try {
     const packageJsonPaths = await glob('**/package.json', {
@@ -140,8 +138,11 @@ async function discoverMainRepoPackages(mainRepoPath: string): Promise<Set<strin
         const packageJsonContent = await readFile(fullPath, 'utf-8');
         const packageJson = JSON.parse(packageJsonContent);
 
-        if (packageJson.name) {
-          packages.add(packageJson.name);
+        if (packageJson.name && (!privateOnly || packageJson.private === true)) {
+          packages.set(packageJson.name, {
+            name: packageJson.name,
+            exports: packageJson.exports || undefined,
+          });
         }
       } catch (error) {
         // Skip invalid package.json files
@@ -156,7 +157,7 @@ async function discoverMainRepoPackages(mainRepoPath: string): Promise<Set<strin
 
 function parseImportPath(
   importPath: string,
-  mainRepoPackages?: Set<string> | null
+  mainRepoPackages?: Map<string, PackageInfo> | null
 ): { packageName: string; importPath: string } | null {
   // Skip relative imports
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
@@ -196,6 +197,14 @@ function parseImportPath(
   const importRelativePath =
     importPath === packageName ? '.' : `./${importPath.slice(packageName.length + 1)}`;
 
+  // Check if this import path is already covered by existing exports
+  if (mainRepoPackages) {
+    const packageInfo = mainRepoPackages.get(packageName);
+    if (packageInfo?.exports && isImportCoveredByExports(importRelativePath, packageInfo.exports)) {
+      return null; // Skip imports already covered by existing exports
+    }
+  }
+
   return {
     packageName,
     importPath: importRelativePath,
@@ -234,4 +243,23 @@ function updateUsageData(
 
   // Sort import paths for consistency
   usageData[packageName].importPaths.sort();
+}
+
+function isImportCoveredByExports(importPath: string, exports: ExportsMap): boolean {
+  // Check if the exact import path exists in exports
+  if (exports[importPath]) {
+    return true;
+  }
+
+  // Check for wildcard patterns (e.g., "./*": "./lib/*.js")
+  for (const exportKey of Object.keys(exports)) {
+    if (exportKey.endsWith('/*')) {
+      const prefix = exportKey.slice(0, -2); // Remove the /*
+      if (importPath.startsWith(prefix) && importPath !== prefix) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
