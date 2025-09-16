@@ -2,6 +2,27 @@
   "name": "exportmapify",
   "entries": [
     {
+      "date": "Tue, 16 Sep 2025 18:07:21 GMT",
+      "version": "0.1.2",
+      "tag": "exportmapify_v0.1.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "altinokd@microsoft.com",
+            "package": "exportmapify",
+            "commit": "7a15c0fb496c361693cf57ee45f5c7c4889244a1",
+            "comment": "Enhance performance documentation with file handling details"
+          },
+          {
+            "author": "altinokd@microsoft.com",
+            "package": "exportmapify",
+            "commit": "fc44cdaa7f718c4e72588269de98e903926beff7",
+            "comment": "Add performance section to README"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 16 Sep 2025 17:43:50 GMT",
       "version": "0.1.1",
       "tag": "exportmapify_v0.1.1",

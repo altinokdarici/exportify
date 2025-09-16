@@ -1,4 +1,17 @@
-# exportmapify
+# Change Log - exportmapify
+
+<!-- This log was last generated on Tue, 16 Sep 2025 18:07:21 GMT and should not be manually modified. -->
+
+<!-- Start content -->
+
+## 0.1.2
+
+Tue, 16 Sep 2025 18:07:21 GMT
+
+### Patches
+
+- Enhance performance documentation with file handling details (altinokd@microsoft.com)
+- Add performance section to README (altinokd@microsoft.com)
 
 ## 0.1.1
 
