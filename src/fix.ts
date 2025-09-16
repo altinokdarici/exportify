@@ -136,7 +136,10 @@ function generateBaselineExports(
   }
 
   // Handle types field
-  if ((packageJson.types || packageJson.typings) && typeof (packageJson.types || packageJson.typings) === 'string') {
+  if (
+    (packageJson.types || packageJson.typings) &&
+    typeof (packageJson.types || packageJson.typings) === 'string'
+  ) {
     const typesPath = (packageJson.types || packageJson.typings) as string;
     rootExport.types = typesPath.startsWith('./') ? typesPath : `./${typesPath}`;
   }
