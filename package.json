@@ -4,7 +4,9 @@
   "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
   "type": "module",
   "exports": null,
-  "bin": "dist/cli.js",
+  "bin": {
+    "exportmapify": "dist/cli.js"
+  },
   "publishConfig": {
     "access": "public"
   },
