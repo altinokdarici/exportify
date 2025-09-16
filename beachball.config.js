@@ -15,11 +15,5 @@ module.exports = {
 
   // Git configuration
   gitTags: true,
-  access: 'public',
-
-  // Repository info
-  repository: {
-    url: 'https://github.com/altinokdarici/exportmapify.git',
-    directory: '.'
-  }
+  access: 'public'
 };
