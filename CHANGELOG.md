@@ -1,5 +1,11 @@
 # exportmapify
 
+## 0.1.1
+
+### Patch Changes
+
+- a206ff2: Clean repository history and documentation
+
 ## 0.1.0
 
 ### Minor Changes
