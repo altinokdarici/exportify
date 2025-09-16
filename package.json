@@ -1,5 +1,5 @@
 {
-  "name": "exportify",
+  "name": "exportmapify",
   "version": "0.0.1",
   "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
   "type": "module",

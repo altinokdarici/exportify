@@ -1,11 +1,11 @@
-# Exportify
+# Exportmapify
 
 A CLI tool to identify deep imports from internal packages in monorepos and automatically generate package.json exports maps.
 
 ## Installation
 
 ```bash
-npm install -g exportify
+npm install -g exportmapify
 ```
 
 ## Development
@@ -20,7 +20,7 @@ yarn build
 
 ## Usage
 
-Exportify uses a two-step workflow:
+Exportmapify uses a two-step workflow:
 
 ### Step 1: Evaluate (Scan for imports)
 
@@ -28,10 +28,10 @@ Scan your repository to build a usage dictionary of package imports:
 
 ```bash
 # Scan current directory and create usage.json
-exportify evaluate usage.json
+exportmapify evaluate usage.json
 
 # Scan specific directory
-exportify evaluate usage.json --cwd /path/to/repo
+exportmapify evaluate usage.json --cwd /path/to/repo
 ```
 
 ### Step 2: Fix (Generate exports)
@@ -40,13 +40,13 @@ Generate exports maps for packages based on the usage data:
 
 ```bash
 # Generate exports for packages (updates package.json files)
-exportify fix usage.json
+exportmapify fix usage.json
 
 # Preview what would be generated without making changes
-exportify fix usage.json --dry-run
+exportmapify fix usage.json --dry-run
 
 # Generate exports for packages in specific directory
-exportify fix usage.json --cwd /path/to/packages
+exportmapify fix usage.json --cwd /path/to/packages
 ```
 
 ### Single Repository Workflow
@@ -55,13 +55,13 @@ For a single monorepo, the workflow is straightforward:
 
 ```bash
 # 1. Scan the monorepo for all imports
-exportify evaluate usage.json --cwd /path/to/monorepo
+exportmapify evaluate usage.json --cwd /path/to/monorepo
 
 # 2. Preview the exports that would be generated
-exportify fix usage.json --dry-run --cwd /path/to/monorepo
+exportmapify fix usage.json --dry-run --cwd /path/to/monorepo
 
 # 3. Apply the exports to all package.json files
-exportify fix usage.json --cwd /path/to/monorepo
+exportmapify fix usage.json --cwd /path/to/monorepo
 ```
 
 ### Multi-Repository Workflow
@@ -70,30 +70,30 @@ For monorepos split across multiple repositories, use the `--main-repo` flag to 
 
 ```bash
 # 1. Scan the main repository (contains the packages you want to generate exports for)
-exportify evaluate usage.json --cwd /path/to/main-repo
+exportmapify evaluate usage.json --cwd /path/to/main-repo
 
 # 2. Scan consumer repositories (only tracks imports to main repo packages)
-exportify evaluate usage.json --cwd /path/to/consumer-repo1 --main-repo /path/to/main-repo
-exportify evaluate usage.json --cwd /path/to/consumer-repo2 --main-repo /path/to/main-repo
+exportmapify evaluate usage.json --cwd /path/to/consumer-repo1 --main-repo /path/to/main-repo
+exportmapify evaluate usage.json --cwd /path/to/consumer-repo2 --main-repo /path/to/main-repo
 
 # 3. Generate exports for packages in the main repo
-exportify fix usage.json --cwd /path/to/main-repo
+exportmapify fix usage.json --cwd /path/to/main-repo
 ```
 
 **Example with real paths:**
 
 ```bash
 # 1. Scan midgard (main repo with @1js/* packages)
-exportify evaluate usage.json --cwd /Users/me/Repo/1js/midgard
+exportmapify evaluate usage.json --cwd /Users/me/Repo/1js/midgard
 
 # 2. Scan ooui (consumer repo that imports @1js/* packages)
-exportify evaluate usage.json --cwd /Users/me/Repo/1js/ooui --main-repo /Users/me/Repo/1js/midgard
+exportmapify evaluate usage.json --cwd /Users/me/Repo/1js/ooui --main-repo /Users/me/Repo/1js/midgard
 
 # 3. Scan office-bohemia (another consumer repo)
-exportify evaluate usage.json --cwd /Users/me/Repo/office-bohemia --main-repo /Users/me/Repo/1js/midgard
+exportmapify evaluate usage.json --cwd /Users/me/Repo/office-bohemia --main-repo /Users/me/Repo/1js/midgard
 
 # 4. Generate exports only for midgard packages
-exportify fix usage.json --cwd /Users/me/Repo/1js/midgard
+exportmapify fix usage.json --cwd /Users/me/Repo/1js/midgard
 ```
 
 ## Usage Data Format
