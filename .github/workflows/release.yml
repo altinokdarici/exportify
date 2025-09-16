@@ -1,4 +1,4 @@
-name: Release
+name: Version Bump
 
 on:
   push:
@@ -7,14 +7,15 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  version-bump:
+    name: Create Version Bump PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,11 +33,36 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Build
-        run: yarn build
+      - name: Create version bump PR
+        run: |
+          # Check if there are any change files
+          if [ -d "change" ] && [ "$(ls -A change)" ]; then
+            # Create a new branch for version bump
+            BRANCH_NAME="version-bump-$(date +%Y%m%d-%H%M%S)"
+            git checkout -b "$BRANCH_NAME"
 
-      - name: Publish to npm
-        run: yarn release
+            # Run beachball bump to update versions
+            yarn bump
+
+            # Check if there are changes to commit
+            if git diff --quiet; then
+              echo "No version changes to commit"
+              exit 0
+            fi
+
+            # Commit and push changes
+            git add .
+            git commit -m "Bump package versions [skip ci]"
+            git push origin "$BRANCH_NAME"
+
+            # Create PR
+            gh pr create \
+              --title "Release: Bump package versions" \
+              --body "Automated version bump created by beachball. This PR contains version updates and changelog entries." \
+              --head "$BRANCH_NAME" \
+              --base main
+          else
+            echo "No change files found, skipping version bump"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
