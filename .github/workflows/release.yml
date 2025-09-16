@@ -27,11 +27,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: yarn release
+      - name: Build
+        run: yarn build
+
+      - name: Publish to npm
+        run: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
