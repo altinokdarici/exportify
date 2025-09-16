@@ -34,52 +34,12 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Check if version changed
-        id: version-check
+      - name: Configure NPM Authentication
         run: |
-          # Get current version from package.json
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
-          # Check if this version is already published
-          if npm view $(node -p "require('./package.json').name")@$CURRENT_VERSION version 2>/dev/null; then
-            echo "Version $CURRENT_VERSION already published"
-            echo "should-publish=false" >> $GITHUB_OUTPUT
-          else
-            echo "Version $CURRENT_VERSION not yet published"
-            echo "should-publish=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Publish to NPM
-        if: steps.version-check.outputs.should-publish == 'true'
-        run: |
-          echo "Publishing version ${{ steps.version-check.outputs.current-version }}"
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Setup GPG signing
-        if: steps.version-check.outputs.should-publish == 'true'
-        uses: ./.github/actions/setup-gpg
-
-      - name: Create Git Tag
-        if: steps.version-check.outputs.should-publish == 'true'
-        run: |
-          git tag -s "v${{ steps.version-check.outputs.current-version }}" -m "Release v${{ steps.version-check.outputs.current-version }}"
-          git push origin "v${{ steps.version-check.outputs.current-version }}"
+      - name: Publish with Beachball
+        run: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        if: steps.version-check.outputs.should-publish == 'true'
-        run: |
-          # Extract changelog for this version
-          VERSION="${{ steps.version-check.outputs.current-version }}"
-
-          # Create release
-          gh release create "v$VERSION" \
-            --title "Release v$VERSION" \
-            --notes "See CHANGELOG.json for details" \
-            --latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

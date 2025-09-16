@@ -28,10 +28,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Setup GPG signing
-        uses: ./.github/actions/setup-gpg
-
       - name: Create version bump PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Check if there are any change files
           if [ -d "change" ] && [ "$(ls -A change)" ]; then
@@ -62,5 +61,3 @@ jobs:
           else
             echo "No change files found, skipping version bump"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

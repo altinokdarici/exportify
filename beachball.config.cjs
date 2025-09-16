@@ -1,6 +1,6 @@
 module.exports = {
-  // Configure for PR-based releases instead of direct pushes
-  publish: false,
-  push: false,
+  // Configure for CI-based releases
+  publish: true,
+  push: true,
   disallowDeletedChangeFiles: false
 };
