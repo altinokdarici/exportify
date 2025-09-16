@@ -4,9 +4,7 @@
   "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
   "type": "module",
   "exports": null,
-  "bin": {
-    "exportmapify": "dist/cli.js"
-  },
+  "bin": "dist/cli.js",
   "publishConfig": {
     "access": "public"
   },
@@ -19,9 +17,10 @@
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
     "typecheck": "tsc --noEmit",
-    "change": "changeset",
-    "version": "changeset version",
-    "release": "yarn build && changeset publish --access public"
+    "change": "beachball change",
+    "bump": "beachball bump",
+    "release": "beachball publish",
+    "checkchange": "beachball check"
   },
   "keywords": [
     "monorepo",
@@ -32,11 +31,15 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/altinokdarici/exportmapify.git"
+  },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "beachball": "2.55.1",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
