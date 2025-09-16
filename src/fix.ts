@@ -28,12 +28,6 @@ export async function fixExports(
       continue; // Skip packages without usage data
     }
 
-    // Only process packages that have deep imports (more than just root import)
-    const hasDeepImports = usage.importPaths.some((path) => path !== '.');
-    if (!hasDeepImports) {
-      continue; // Skip packages with only root imports
-    }
-
     // Generate exports map for this package
     const exportsMap = await generateExportsMap(pkg, usage);
 
