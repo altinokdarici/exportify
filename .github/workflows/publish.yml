@@ -42,7 +42,7 @@ jobs:
           echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           # Check if this version is already published
-          if npm view exportmapify@$CURRENT_VERSION version 2>/dev/null; then
+          if npm view $(node -p "require('./package.json').name")@$CURRENT_VERSION version 2>/dev/null; then
             echo "Version $CURRENT_VERSION already published"
             echo "should-publish=false" >> $GITHUB_OUTPUT
           else
