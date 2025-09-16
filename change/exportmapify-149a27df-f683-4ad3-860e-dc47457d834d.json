@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Add performance section to README",
-  "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
-  "dependentChangeType": "patch"
-}
