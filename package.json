@@ -4,7 +4,12 @@
   "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
   "type": "module",
   "exports": null,
-  "bin": "dist/cli.js",
+  "bin": {
+    "exportmapify": "dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
@@ -16,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "change": "changeset",
     "version": "changeset version",
-    "release": "yarn build && changeset publish"
+    "release": "yarn build && changeset publish --access public"
   },
   "keywords": [
     "monorepo",
