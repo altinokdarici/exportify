@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "Add git configuration to release workflow",
-  "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
-  "dependentChangeType": "none"
-}

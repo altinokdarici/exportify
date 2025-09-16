@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "Configure beachball for PR-based releases",
-  "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
-  "dependentChangeType": "none"
-}

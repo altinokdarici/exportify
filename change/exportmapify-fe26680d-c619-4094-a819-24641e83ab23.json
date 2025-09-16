@@ -1,7 +1,0 @@
-{
-  "type": "none",
-  "comment": "Migrate from changeset to beachball for release management",
-  "packageName": "exportmapify",
-  "email": "altinok.darici@gmail.com",
-  "dependentChangeType": "none"
-}
