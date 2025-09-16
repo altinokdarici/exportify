@@ -173,8 +173,7 @@ When you scan a consumer repository (with `--main-repo`), the tool:
 ### Export Generation
 The `fix` command:
 - Only processes packages that exist in the target directory
-- Only generates exports for packages with deep imports (beyond root import)
-- Skips packages that only have root imports (e.g., just `"."`)
+- Generates exports maps for all packages with usage data (including root-only imports)
 
 ## Features
 
