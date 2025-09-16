@@ -54,7 +54,7 @@ jobs:
 
             # Commit and push changes
             git add .
-            git commit -m "Bump package versions [skip ci]"
+            git commit -m "Bump package versions"
             git push origin "$BRANCH_NAME"
 
             # Create PR

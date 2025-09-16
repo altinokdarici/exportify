@@ -38,3 +38,4 @@ jobs:
 
       - name: Check changes
         run: yarn checkchange
+        if: ${{ !(startsWith(github.head_ref, 'version-bump-') && github.actor == 'github-actions[bot]') }}
