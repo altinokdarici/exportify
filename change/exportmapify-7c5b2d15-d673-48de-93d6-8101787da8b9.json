@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Enhance performance documentation with file handling details",
-  "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
-  "dependentChangeType": "patch"
-}
