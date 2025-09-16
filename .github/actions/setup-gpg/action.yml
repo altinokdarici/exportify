@@ -24,6 +24,16 @@ runs:
         %echo done
         EOF
 
+        # Configure GPG for non-interactive use
+        export GPG_TTY=$(tty)
+        echo "use-agent" > ~/.gnupg/gpg.conf
+        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+        echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+
+        # Restart gpg-agent
+        gpgconf --kill gpg-agent
+        gpgconf --launch gpg-agent
+
         # Generate the GPG key
         if ! gpg --batch --generate-key key_config; then
           echo "❌ Failed to generate GPG key"
@@ -41,12 +51,17 @@ runs:
         echo "✅ Generated GPG key: $GPG_KEY_ID"
         echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
 
+        # Configure GPG for non-interactive use
+        export GPG_TTY=$(tty)
+        echo "GPG_TTY=$(tty)" >> $GITHUB_ENV
+
         # Configure git for signing
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "GitHub Action"
         git config --global user.signingkey "$GPG_KEY_ID"
         git config --global commit.gpgsign true
         git config --global tag.gpgsign true
+        git config --global gpg.program gpg
 
         echo "✅ Git configured for GPG signing"
 
