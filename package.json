@@ -1,0 +1,52 @@
+{
+  "name": "exportmapify",
+  "version": "0.1.2",
+  "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
+  "type": "module",
+  "exports": null,
+  "bin": "dist/cli.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
+    "typecheck": "tsc --noEmit",
+  },
+  "keywords": [
+    "monorepo",
+    "deep-imports",
+    "exports",
+    "cli",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/altinokdarici/exportmapify.git"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "jest": "^29.0.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "commander": "^11.0.0",
+    "glob": "^10.0.0"
+  },
+  "packageManager": "yarn@4.5.3"
+}
