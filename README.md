@@ -206,3 +206,6 @@ Commands operate within the specified working directory tree:
 
 ## Performance
 Exportmapify is optimized for large monorepos with efficient parallel processing and smart file filtering. The tool can handle repositories with hundreds of thousands of files while maintaining fast scan times.
+
+## License
+MIT
