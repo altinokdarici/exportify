@@ -4,7 +4,11 @@ import { glob } from 'glob';
 import { existsSync } from 'fs';
 import type { UsageData, FixOptions, ExportsMap } from './types.js';
 
-export async function fixExports(cwd: string, usageFile: string, options: FixOptions): Promise<void> {
+export async function fixExports(
+  cwd: string,
+  usageFile: string,
+  options: FixOptions
+): Promise<void> {
   console.log(`Generating exports maps for packages in: ${cwd}`);
 
   // Read usage data
@@ -25,7 +29,7 @@ export async function fixExports(cwd: string, usageFile: string, options: FixOpt
     }
 
     // Only process packages that have deep imports (more than just root import)
-    const hasDeepImports = usage.importPaths.some(path => path !== '.');
+    const hasDeepImports = usage.importPaths.some((path) => path !== '.');
     if (!hasDeepImports) {
       continue; // Skip packages with only root imports
     }
@@ -48,10 +52,12 @@ export async function fixExports(cwd: string, usageFile: string, options: FixOpt
   console.log(`Processed exports for ${processedCount} packages`);
 }
 
-async function findPackages(rootPath: string): Promise<Array<{name: string, path: string, packageJsonPath: string}>> {
+async function findPackages(
+  rootPath: string
+): Promise<Array<{ name: string; path: string; packageJsonPath: string }>> {
   const packageJsonPaths = await glob('**/package.json', {
     cwd: rootPath,
-    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
   });
 
   const packages = [];
@@ -66,7 +72,7 @@ async function findPackages(rootPath: string): Promise<Array<{name: string, path
         packages.push({
           name: packageJson.name,
           path: dirname(fullPath),
-          packageJsonPath: fullPath
+          packageJsonPath: fullPath,
         });
       }
     } catch (error) {
@@ -105,8 +111,11 @@ async function generateExportsMap(
   return exportsMap;
 }
 
-function generateBaselineExports(exportsMap: ExportsMap, packageJson: any): void {
-  const rootExport: any = {};
+function generateBaselineExports(
+  exportsMap: ExportsMap,
+  packageJson: Record<string, unknown>
+): void {
+  const rootExport: Record<string, string> = {};
 
   // Handle main field (typically CommonJS)
   if (packageJson.main) {
@@ -120,7 +129,9 @@ function generateBaselineExports(exportsMap: ExportsMap, packageJson: any): void
 
   // Handle module field (ESM)
   if (packageJson.module) {
-    const modulePath = packageJson.module.startsWith('./') ? packageJson.module : `./${packageJson.module}`;
+    const modulePath = packageJson.module.startsWith('./')
+      ? packageJson.module
+      : `./${packageJson.module}`;
     rootExport.import = modulePath;
   }
 
@@ -132,20 +143,26 @@ function generateBaselineExports(exportsMap: ExportsMap, packageJson: any): void
 
   // Handle browser field (simplified - only string values for now)
   if (typeof packageJson.browser === 'string') {
-    const browserPath = packageJson.browser.startsWith('./') ? packageJson.browser : `./${packageJson.browser}`;
+    const browserPath = packageJson.browser.startsWith('./')
+      ? packageJson.browser
+      : `./${packageJson.browser}`;
     rootExport.browser = browserPath;
   }
 
   // Set the root export
   if (Object.keys(rootExport).length > 0) {
-    exportsMap['.'] = Object.keys(rootExport).length === 1 ? Object.values(rootExport)[0] as string : rootExport;
+    exportsMap['.'] =
+      Object.keys(rootExport).length === 1 ? (Object.values(rootExport)[0] as string) : rootExport;
   } else {
     // Fallback defaults
     exportsMap['.'] = './lib/index.js';
   }
 }
 
-async function generateExportEntry(importPath: string, packagePath: string): Promise<string | object | null> {
+async function generateExportEntry(
+  importPath: string,
+  packagePath: string
+): Promise<string | object | null> {
   // Remove leading './' if present
   const cleanPath = importPath.startsWith('./') ? importPath.slice(2) : importPath;
 
@@ -177,7 +194,7 @@ async function generateExportEntry(importPath: string, packagePath: string): Pro
 
   // If we found a file, generate appropriate export entry
   if (foundFile && buildDir) {
-    const exportEntry: any = {};
+    const exportEntry: Record<string, string> = {};
 
     // Check for TypeScript types
     const typesPath = join(packagePath, buildDir, foundFile.replace(/\.(js|mjs|cjs)$/, '.d.ts'));
@@ -206,15 +223,17 @@ async function generateExportEntry(importPath: string, packagePath: string): Pro
     return {
       types: `./lib/${baseName}.d.ts`,
       import: `./lib/${baseName}.js`,
-      default: `./lib/${baseName}.js`
+      default: `./lib/${baseName}.js`,
     };
   }
 
   // Fallback: assume it will exist in lib directory
-  console.warn(`Warning: Could not find file for import path "${importPath}" in package at ${packagePath}`);
+  console.warn(
+    `Warning: Could not find file for import path "${importPath}" in package at ${packagePath}`
+  );
   return {
     types: `./lib/${cleanPath}.d.ts`,
-    default: `./lib/${cleanPath}.js`
+    default: `./lib/${cleanPath}.js`,
   };
 }
 

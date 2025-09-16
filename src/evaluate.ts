@@ -5,9 +5,14 @@ import { existsSync } from 'fs';
 import type { UsageData } from './types.js';
 
 // Pre-compiled regex for performance
-const IMPORT_REGEX = /(?:import\s+(?:[\w*{}\s,]+\s+from\s+)?['"`]([^'"`]+)['"`]|require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)|import\s*\(\s*['"`]([^'"`]+)['"`]\s*\))/g;
+const IMPORT_REGEX =
+  /(?:import\s+(?:[\w*{}\s,]+\s+from\s+)?['"`]([^'"`]+)['"`]|require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)|import\s*\(\s*['"`]([^'"`]+)['"`]\s*\))/g;
 
-export async function evaluateUsage(cwd: string, usageFile: string, options: { mainRepo?: string } = {}): Promise<void> {
+export async function evaluateUsage(
+  cwd: string,
+  usageFile: string,
+  options: { mainRepo?: string } = {}
+): Promise<void> {
   console.log(`Scanning imports in: ${cwd}`);
 
   // Discover packages in main repo (defaults to cwd if not specified)
@@ -33,7 +38,7 @@ export async function evaluateUsage(cwd: string, usageFile: string, options: { m
   // Find all source files
   const sourceFiles = await glob('**/*.{ts,tsx,js,jsx,mts,cts,cjs,mjs}', {
     cwd,
-    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/lib/**', '**/*.d.ts']
+    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/lib/**', '**/*.d.ts'],
   });
 
   console.log(`Found ${sourceFiles.length} source files to analyze`);
@@ -126,7 +131,7 @@ async function discoverMainRepoPackages(mainRepoPath: string): Promise<Set<strin
   try {
     const packageJsonPaths = await glob('**/package.json', {
       cwd: mainRepoPath,
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
     });
 
     for (const packagePath of packageJsonPaths) {
@@ -149,14 +154,20 @@ async function discoverMainRepoPackages(mainRepoPath: string): Promise<Set<strin
   return packages;
 }
 
-function parseImportPath(importPath: string, mainRepoPackages?: Set<string> | null): { packageName: string; importPath: string } | null {
+function parseImportPath(
+  importPath: string,
+  mainRepoPackages?: Set<string> | null
+): { packageName: string; importPath: string } | null {
   // Skip relative imports
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
     return null;
   }
 
   // Skip built-in Node.js modules
-  if (importPath.startsWith('node:') || ['fs', 'path', 'url', 'util', 'crypto', 'http', 'https', 'stream'].includes(importPath)) {
+  if (
+    importPath.startsWith('node:') ||
+    ['fs', 'path', 'url', 'util', 'crypto', 'http', 'https', 'stream'].includes(importPath)
+  ) {
     return null;
   }
 
@@ -182,11 +193,12 @@ function parseImportPath(importPath: string, mainRepoPackages?: Set<string> | nu
   }
 
   // Convert to import path relative to package root
-  const importRelativePath = importPath === packageName ? '.' : `./${importPath.slice(packageName.length + 1)}`;
+  const importRelativePath =
+    importPath === packageName ? '.' : `./${importPath.slice(packageName.length + 1)}`;
 
   return {
     packageName,
-    importPath: importRelativePath
+    importPath: importRelativePath,
   };
 }
 
@@ -206,7 +218,7 @@ function updateUsageData(
     usageData[packageName] = {
       package: packageName,
       versionRequirement,
-      importPaths: []
+      importPaths: [],
     };
   }
 

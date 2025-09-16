@@ -14,12 +14,14 @@ export interface FixOptions {
 }
 
 export interface ExportsMap {
-  [key: string]: string | {
-    types?: string;
-    import?: string;
-    require?: string;
-    default?: string;
-    browser?: string;
-    source?: string;
-  };
+  [key: string]:
+    | string
+    | {
+        types?: string;
+        import?: string;
+        require?: string;
+        default?: string;
+        browser?: string;
+        source?: string;
+      };
 }
