@@ -1,9 +1,9 @@
 {
   "name": "exportify",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "CLI tool to identify deep imports from internal packages in monorepos and generate package.json exports",
   "type": "module",
-  "main": "dist/index.js",
+  "exports": null,
   "bin": "dist/cli.js",
   "scripts": {
     "build": "tsc",
@@ -13,7 +13,10 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "change": "changeset",
+    "version": "changeset version",
+    "release": "yarn build && changeset publish"
   },
   "keywords": [
     "monorepo",
@@ -25,6 +28,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
