@@ -24,43 +24,49 @@ Exportmapify uses a two-step workflow:
 
 ### Step 1: Evaluate (Scan for imports)
 
-Scan your repository to build a usage dictionary of package imports:
+Scan your repository to build a usage dictionary of package imports. The scanning process is **additive** - you can run it multiple times in different locations, and each scan will add new findings to the existing usage.json file without overwriting previous data:
 
 ```bash
 # Scan current directory and create usage.json
 exportmapify evaluate usage.json
 
-# Scan specific directory
+# Scan specific directory (adds to existing usage.json)
 exportmapify evaluate usage.json --cwd /path/to/repo
+
+# Run multiple scans to build comprehensive usage data
+exportmapify evaluate usage.json --cwd /path/to/frontend
+exportmapify evaluate usage.json --cwd /path/to/backend
+exportmapify evaluate usage.json --cwd /path/to/mobile
 ```
 
 ### Step 2: Fix (Generate exports)
 
-Generate exports maps for packages based on the usage data:
+Generate exports maps for packages based on the usage data. The fix command **only processes packages within the specified CWD tree** - if you have scanned usage from multiple repositories, only packages that exist in the target directory will have their exports updated:
 
 ```bash
-# Generate exports for packages (updates package.json files)
+# Generate exports for packages in current directory (updates package.json files)
 exportmapify fix usage.json
 
 # Preview what would be generated without making changes
 exportmapify fix usage.json --dry-run
 
-# Generate exports for packages in specific directory
+# Generate exports for packages in specific directory only
+# (packages from other scanned repos won't be affected)
 exportmapify fix usage.json --cwd /path/to/packages
 ```
 
 ### Single Repository Workflow
 
-For a single monorepo, the workflow is straightforward:
+For a single monorepo, the workflow is straightforward. By default, both commands operate on all packages within the current working directory tree:
 
 ```bash
-# 1. Scan the monorepo for all imports
+# 1. Scan the monorepo for all imports (scans all packages in CWD tree)
 exportmapify evaluate usage.json --cwd /path/to/monorepo
 
 # 2. Preview the exports that would be generated
 exportmapify fix usage.json --dry-run --cwd /path/to/monorepo
 
-# 3. Apply the exports to all package.json files
+# 3. Apply the exports to all package.json files (only packages in CWD tree)
 exportmapify fix usage.json --cwd /path/to/monorepo
 ```
 
@@ -183,3 +189,18 @@ The `fix` command:
 - **Conditional exports**: Generates proper types, import, require, default, and browser fields
 - **Selective tracking**: Only tracks packages you care about when scanning consumer repositories
 - **Data merging**: Multiple scans contribute to the same usage file for comprehensive analysis
+
+## Key Behaviors
+
+### Additive Scanning
+The `evaluate` command is **additive** - running it multiple times will:
+- Merge new import findings with existing usage data
+- Preserve previously discovered imports
+- Update version requirements if new ones are found
+- Allow building comprehensive usage data across multiple scans
+
+### CWD Tree Scoping
+Commands operate within the specified working directory tree:
+- **`evaluate`**: Scans all source files within the CWD tree (ignoring node_modules, dist, etc.)
+- **`fix`**: Only updates package.json files for packages that exist within the CWD tree
+- This ensures that scanning usage in one repository doesn't accidentally modify packages in another repository
