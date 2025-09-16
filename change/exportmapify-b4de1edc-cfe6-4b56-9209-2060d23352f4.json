@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "Add license section to README documentation",
-  "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
-  "dependentChangeType": "patch"
-}
