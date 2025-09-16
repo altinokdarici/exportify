@@ -2,6 +2,6 @@
   "type": "none",
   "comment": "Migrate from changeset to beachball for release management",
   "packageName": "exportmapify",
-  "email": "altinokd@microsoft.com",
+  "email": "altinok.darici@gmail.com",
   "dependentChangeType": "none"
 }
