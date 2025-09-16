@@ -38,7 +38,7 @@ jobs:
           # Check if there are any change files
           if [ -d "change" ] && [ "$(ls -A change)" ]; then
             # Create a new branch for version bump
-            BRANCH_NAME="version-bump-$(date +%s)"
+            BRANCH_NAME="version-bump-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
 
             # Run beachball bump to update versions
