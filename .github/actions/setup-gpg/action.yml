@@ -1,0 +1,54 @@
+name: 'Setup GPG Signing'
+description: 'Generate GPG key and configure git for signed commits'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate GPG key and configure git
+      shell: bash
+      run: |
+        set -euo pipefail  # Exit on error, undefined vars, pipe failures
+
+        # Generate GPG key for GitHub Actions
+        cat > key_config <<EOF
+        %echo Generating a basic OpenPGP key
+        Key-Type: RSA
+        Key-Length: 4096
+        Subkey-Type: RSA
+        Subkey-Length: 4096
+        Name-Real: GitHub Action
+        Name-Email: github-actions[bot]@users.noreply.github.com
+        Expire-Date: 0
+        Passphrase: ''
+        %commit
+        %echo done
+        EOF
+
+        # Generate the GPG key
+        if ! gpg --batch --generate-key key_config; then
+          echo "❌ Failed to generate GPG key"
+          exit 1
+        fi
+
+        # Get the key ID and configure git
+        GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep 'sec ' | head -1 | awk '{print $2}' | cut -d'/' -f2)
+
+        if [[ -z "$GPG_KEY_ID" ]]; then
+          echo "❌ Failed to extract GPG key ID"
+          exit 1
+        fi
+
+        echo "✅ Generated GPG key: $GPG_KEY_ID"
+        echo "GPG_KEY_ID=$GPG_KEY_ID" >> $GITHUB_ENV
+
+        # Configure git for signing
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "GitHub Action"
+        git config --global user.signingkey "$GPG_KEY_ID"
+        git config --global commit.gpgsign true
+        git config --global tag.gpgsign true
+
+        echo "✅ Git configured for GPG signing"
+
+        # Clean up key config file
+        rm -f key_config
