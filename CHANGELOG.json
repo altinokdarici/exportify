@@ -1,0 +1,38 @@
+{
+  "name": "exportmapify",
+  "entries": [
+    {
+      "date": "Tue, 16 Sep 2025 17:43:50 GMT",
+      "version": "0.1.1",
+      "tag": "exportmapify_v0.1.1",
+      "comments": {
+        "none": [
+          {
+            "author": "altinokd@microsoft.com",
+            "package": "exportmapify",
+            "commit": "74704a2600aaba5f420f450774f1a45a6cc8c24a",
+            "comment": "Configure beachball for PR-based releases"
+          },
+          {
+            "author": "altinokd@microsoft.com",
+            "package": "exportmapify",
+            "commit": "3c73d684826d21f9942367e1591373c594f87614",
+            "comment": "Add CodeQL scanning and GPG signing to fix repository rule violations"
+          },
+          {
+            "author": "altinokd@microsoft.com",
+            "package": "exportmapify",
+            "commit": "40e9d85e3351acd1846310a409adb11e42568d07",
+            "comment": "Add git configuration to release workflow"
+          },
+          {
+            "author": "altinok.darici@gmail.com",
+            "package": "exportmapify",
+            "commit": "1b8816ef6b9fb98f9fb4b53cceb2dc1f8a74b891",
+            "comment": "Migrate from changeset to beachball for release management"
+          }
+        ]
+      }
+    }
+  ]
+}
