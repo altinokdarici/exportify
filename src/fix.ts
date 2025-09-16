@@ -118,7 +118,7 @@ function generateBaselineExports(
   const rootExport: Record<string, string> = {};
 
   // Handle main field (typically CommonJS)
-  if (packageJson.main) {
+  if (packageJson.main && typeof packageJson.main === 'string') {
     const mainPath = packageJson.main.startsWith('./') ? packageJson.main : `./${packageJson.main}`;
     rootExport.default = mainPath;
     // If no module field, assume main is also for require
@@ -128,7 +128,7 @@ function generateBaselineExports(
   }
 
   // Handle module field (ESM)
-  if (packageJson.module) {
+  if (packageJson.module && typeof packageJson.module === 'string') {
     const modulePath = packageJson.module.startsWith('./')
       ? packageJson.module
       : `./${packageJson.module}`;
@@ -136,8 +136,8 @@ function generateBaselineExports(
   }
 
   // Handle types field
-  if (packageJson.types || packageJson.typings) {
-    const typesPath = packageJson.types || packageJson.typings;
+  if ((packageJson.types || packageJson.typings) && typeof (packageJson.types || packageJson.typings) === 'string') {
+    const typesPath = (packageJson.types || packageJson.typings) as string;
     rootExport.types = typesPath.startsWith('./') ? typesPath : `./${typesPath}`;
   }
 
