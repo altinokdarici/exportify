@@ -75,46 +75,47 @@ export async function generateBaselineExports(
     (typeof packageJson.browser === 'string' || typeof packageJson.browser === 'object')
   ) {
     const { rootBrowser, browserMappings } = parseBrowserField(
-      packageJson.browser as string | Record<string, string | false>
+      packageJson.browser as string | Record<string, string | false>,
+      packageJson.main as string | undefined,
+      packageJson.module as string | undefined
     );
 
     if (rootBrowser) {
-      // String browser field maps to root export
+      // Browser field maps to root export (either string field or main/module match)
       rootExport.browser = rootBrowser;
-    } else {
-      // Object browser field - process mappings
-      for (const [key, value] of Object.entries(browserMappings)) {
-        if (value === false) {
-          // Handle blocked browser entries - could add a special condition
-          continue;
+    }
+
+    // Object browser field - process separate export mappings
+    for (const [key, value] of Object.entries(browserMappings)) {
+      if (value === false) {
+        // Handle blocked browser entries - create export with no browser condition
+        // This effectively blocks the module in browser environments
+        const exportEntry: ExportConditions = {};
+
+        // Try to find source file for this export
+        const sourceFile = findSourceFile(key, packageDir);
+        if (sourceFile) {
+          exportEntry.source = sourceFile;
         }
 
-        // Check if key matches main or module field
-        const mainPath = packageJson.main
-          ? normalizeRelativePath(packageJson.main as string)
-          : null;
-        const modulePath = packageJson.module
-          ? normalizeRelativePath(packageJson.module as string)
-          : null;
+        exportEntry.default = key;
+        // Note: no browser condition means it's blocked in browser
 
-        if (key === mainPath || key === modulePath) {
-          // Maps to root export with browser condition
-          rootExport.browser = value;
-        } else {
-          // Treat as separate export entry with source detection
-          const exportEntry: ExportConditions = {};
+        exportsMap[key] = exportEntry;
+      } else {
+        // Create separate export entry with browser condition
+        const exportEntry: ExportConditions = {};
 
-          // Try to find source file for this export
-          const sourceFile = findSourceFile(key, packageDir);
-          if (sourceFile) {
-            exportEntry.source = sourceFile;
-          }
-
-          exportEntry.browser = value;
-          exportEntry.default = key;
-
-          exportsMap[key] = exportEntry;
+        // Try to find source file for this export
+        const sourceFile = findSourceFile(key, packageDir);
+        if (sourceFile) {
+          exportEntry.source = sourceFile;
         }
+
+        exportEntry.browser = value;
+        exportEntry.default = key;
+
+        exportsMap[key] = exportEntry;
       }
     }
   }

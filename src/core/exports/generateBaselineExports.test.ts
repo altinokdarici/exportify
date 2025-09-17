@@ -177,7 +177,7 @@ describe('generateBaselineExports', () => {
     });
   });
 
-  it('skips false browser field entries', async () => {
+  it('handles false browser field entries by creating exports without browser condition', async () => {
     await mkdir(join(testDir, 'lib'), { recursive: true });
     await writeFile(join(testDir, 'package.json'), JSON.stringify({ name: 'test' }));
     await writeFile(join(testDir, 'lib/index.js'), 'module.exports = {};');
@@ -199,6 +199,9 @@ describe('generateBaselineExports', () => {
         types: './lib/index.d.ts',
         require: './lib/index.js',
         default: './lib/index.js',
+      },
+      './lib/node-only.js': {
+        default: './lib/node-only.js',
       },
       './lib/utils.js': {
         browser: './lib/browser-utils.js',
@@ -246,6 +249,142 @@ describe('generateBaselineExports', () => {
       require: './lib/index.cjs',
       browser: './lib/browser.js',
       default: './lib/index.cjs',
+    });
+  });
+
+  describe('enhanced browser field handling', () => {
+    it('handles complex object browser field with main/module replacement and separate entries', async () => {
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'package.json'), JSON.stringify({ name: 'test' }));
+      await writeFile(join(testDir, 'lib/index.cjs'), 'module.exports = {};');
+      await writeFile(join(testDir, 'lib/index.mjs'), 'export {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.cjs',
+        module: 'lib/index.mjs',
+        browser: {
+          './lib/index.cjs': './lib/browser.cjs', // replaces main
+          './lib/utils.js': './lib/browser-utils.js', // separate export
+          './lib/node-only.js': false, // blocked in browser
+        },
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          import: './lib/index.mjs',
+          require: './lib/index.cjs',
+          browser: './lib/browser.cjs',
+          default: './lib/index.cjs',
+        },
+        './lib/utils.js': {
+          browser: './lib/browser-utils.js',
+          default: './lib/utils.js',
+        },
+        './lib/node-only.js': {
+          default: './lib/node-only.js',
+        },
+      });
+    });
+
+    it('handles module field replacement in browser field', async () => {
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'package.json'), JSON.stringify({ name: 'test' }));
+      await writeFile(join(testDir, 'lib/index.cjs'), 'module.exports = {};');
+      await writeFile(join(testDir, 'lib/index.mjs'), 'export {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.cjs',
+        module: 'lib/index.mjs',
+        browser: {
+          './lib/index.mjs': './lib/browser.mjs', // replaces module
+          './lib/utils.js': './lib/browser-utils.js', // separate export
+        },
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          import: './lib/index.mjs',
+          require: './lib/index.cjs',
+          browser: './lib/browser.mjs',
+          default: './lib/index.cjs',
+        },
+        './lib/utils.js': {
+          browser: './lib/browser-utils.js',
+          default: './lib/utils.js',
+        },
+      });
+    });
+
+    it('handles false value for main field in browser object', async () => {
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'package.json'), JSON.stringify({ name: 'test' }));
+      await writeFile(join(testDir, 'lib/index.js'), 'module.exports = {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        browser: {
+          './lib/index.js': false, // block main in browser
+          './lib/utils.js': './lib/browser-utils.js', // separate export
+        },
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+          // Note: no browser condition because main field was blocked
+        },
+        './lib/utils.js': {
+          browser: './lib/browser-utils.js',
+          default: './lib/utils.js',
+        },
+      });
+    });
+
+    it('normalizes paths correctly when matching main/module fields', async () => {
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'package.json'), JSON.stringify({ name: 'test' }));
+      await writeFile(join(testDir, 'lib/index.js'), 'module.exports = {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js', // no ./ prefix
+        browser: {
+          './lib/index.js': './lib/browser.js', // with ./ prefix - should still match
+          './lib/utils.js': './lib/browser-utils.js',
+        },
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          browser: './lib/browser.js',
+          default: './lib/index.js',
+        },
+        './lib/utils.js': {
+          browser: './lib/browser-utils.js',
+          default: './lib/utils.js',
+        },
+      });
     });
   });
 
