@@ -8,12 +8,6 @@ export interface UsageData {
   [packageName: string]: PackageUsage;
 }
 
-export interface FixOptions {
-  cwd: string;
-  dryRun?: boolean;
-  packageName?: string;
-}
-
 export interface ExportsMap {
   [key: string]:
     | string
@@ -25,9 +19,4 @@ export interface ExportsMap {
         browser?: string;
         source?: string;
       };
-}
-
-export interface PackageInfo {
-  name: string;
-  exports?: ExportsMap;
 }

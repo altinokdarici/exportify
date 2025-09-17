@@ -1,0 +1,86 @@
+import { join } from 'path';
+import { existsSync } from 'fs';
+
+/**
+ * Generates an export entry for a given import path by finding the actual file
+ * @param importPath - The import path to generate exports for
+ * @param packagePath - Path to the package directory
+ * @returns Export entry object or null if no suitable file found
+ */
+export async function generateExportEntry(
+  importPath: string,
+  packagePath: string
+): Promise<string | object | null> {
+  // Remove leading './' if present
+  const cleanPath = importPath.startsWith('./') ? importPath.slice(2) : importPath;
+
+  // Try to detect the actual file structure
+  const possibleExtensions = ['', '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs'];
+  const possibleBases = ['lib', 'dist', 'src'];
+
+  let foundFile: string | null = null;
+  let buildDir: string | null = null;
+
+  // Look for the file in different build directories
+  for (const base of possibleBases) {
+    for (const ext of possibleExtensions) {
+      const testPath = join(packagePath, base, `${cleanPath}${ext}`);
+      const testIndexPath = join(packagePath, base, cleanPath, `index${ext}`);
+
+      if (existsSync(testPath)) {
+        foundFile = `${cleanPath}${ext}`;
+        buildDir = base;
+        break;
+      } else if (existsSync(testIndexPath)) {
+        foundFile = `${cleanPath}/index${ext}`;
+        buildDir = base;
+        break;
+      }
+    }
+    if (foundFile) break;
+  }
+
+  // If we found a file, generate appropriate export entry
+  if (foundFile && buildDir) {
+    const exportEntry: Record<string, string> = {};
+
+    // Check for TypeScript types
+    const typesPath = join(packagePath, buildDir, foundFile.replace(/\.(js|mjs|cjs)$/, '.d.ts'));
+    if (existsSync(typesPath)) {
+      exportEntry.types = `./${buildDir}/${foundFile.replace(/\.(js|mjs|cjs)$/, '.d.ts')}`;
+    }
+
+    // Add the main export
+    const jsPath = `./${buildDir}/${foundFile.replace(/\.ts$/, '.js')}`;
+    exportEntry.default = jsPath;
+
+    // For TypeScript files, assume they'll be compiled to JS
+    if (foundFile.endsWith('.ts') || foundFile.endsWith('.tsx')) {
+      exportEntry.import = jsPath;
+    }
+
+    return Object.keys(exportEntry).length === 1 ? exportEntry.default : exportEntry;
+  }
+
+  // If no file found, try to infer from src -> lib mapping
+  const srcPath = join(packagePath, 'src', `${cleanPath}.ts`);
+  const srcIndexPath = join(packagePath, 'src', cleanPath, 'index.ts');
+
+  if (existsSync(srcPath) || existsSync(srcIndexPath)) {
+    const baseName = existsSync(srcPath) ? cleanPath : `${cleanPath}/index`;
+    return {
+      types: `./lib/${baseName}.d.ts`,
+      import: `./lib/${baseName}.js`,
+      default: `./lib/${baseName}.js`,
+    };
+  }
+
+  // Fallback: assume it will exist in lib directory
+  console.warn(
+    `Warning: Could not find file for import path "${importPath}" in package at ${packagePath}`
+  );
+  return {
+    types: `./lib/${cleanPath}.d.ts`,
+    default: `./lib/${cleanPath}.js`,
+  };
+}

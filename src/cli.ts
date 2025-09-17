@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import { evaluateUsage } from './evaluate.js';
-import { fixExports } from './fix.js';
+import { evaluateUsage } from './commands/evaluate.js';
+import { fixExports } from './commands/fix.js';
 
 program
   .name('exportify')
