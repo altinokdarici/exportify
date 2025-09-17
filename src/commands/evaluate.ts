@@ -27,10 +27,22 @@ export async function evaluateUsage(
 ): Promise<void> {
   console.log(`Scanning imports in: ${cwd}`);
 
-  // Discover packages in main repo (defaults to cwd if not specified)
-  const mainRepoPath = options.mainRepo || cwd;
-  const mainRepoPackages = await discoverMainRepoPackages(mainRepoPath, options.privateOnly);
-  console.log(`Found ${mainRepoPackages.size} packages in main repo: ${mainRepoPath}`);
+  // Always discover packages in the current scanning directory
+  const currentRepoPackages = await discoverMainRepoPackages(cwd, options.privateOnly);
+
+  // Determine which packages to track based on mode
+  let targetPackages: Set<string>;
+  if (options.mainRepo) {
+    // Cross-repo mode: only track imports to packages from the main repo
+    targetPackages = await discoverMainRepoPackages(options.mainRepo, options.privateOnly);
+    console.log(
+      `Cross-repo mode: tracking ${targetPackages.size} main-repo packages from ${options.mainRepo}`
+    );
+  } else {
+    // Single-repo mode: only track internal packages (packages that exist in current repo)
+    targetPackages = currentRepoPackages;
+    console.log(`Single-repo mode: tracking ${targetPackages.size} internal packages`);
+  }
 
   // Load existing usage data if it exists
   let usageData: UsageData = {};
@@ -73,7 +85,7 @@ export async function evaluateUsage(
   // Process each source file
   for (const sourceFile of sourceFiles) {
     const filePath = join(cwd, sourceFile);
-    const imports = await analyzeFileImports(filePath, mainRepoPackages);
+    const imports = await analyzeFileImports(filePath, targetPackages);
 
     for (const { packageName, importPath } of imports) {
       // Initialize package usage if it doesn't exist
