@@ -20,7 +20,7 @@ export async function generateBaselineExports(
   const rootExport: ExportConditions = {};
 
   // Check for source field in package.json first
-  const packageJsonSource = await findSourceFromPackageJson(packageJson, packageDir);
+  const packageJsonSource = findSourceFromPackageJson(packageJson, packageDir);
   if (packageJsonSource) {
     rootExport.source = packageJsonSource;
   }
@@ -48,7 +48,7 @@ export async function generateBaselineExports(
 
     // Try to find source file for main field if not already set
     if (!rootExport.source) {
-      const sourceFile = await findSourceFile(mainPath, packageDir);
+      const sourceFile = findSourceFile(mainPath, packageDir);
       if (sourceFile) {
         rootExport.source = sourceFile;
       }
@@ -62,7 +62,7 @@ export async function generateBaselineExports(
 
     // Try to find source file for module field if not already set
     if (!rootExport.source) {
-      const sourceFile = await findSourceFile(modulePath, packageDir);
+      const sourceFile = findSourceFile(modulePath, packageDir);
       if (sourceFile) {
         rootExport.source = sourceFile;
       }
@@ -105,7 +105,7 @@ export async function generateBaselineExports(
           const exportEntry: ExportConditions = {};
 
           // Try to find source file for this export
-          const sourceFile = await findSourceFile(key, packageDir);
+          const sourceFile = findSourceFile(key, packageDir);
           if (sourceFile) {
             exportEntry.source = sourceFile;
           }

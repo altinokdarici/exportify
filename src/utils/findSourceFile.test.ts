@@ -20,7 +20,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'utils.ts'), 'export const test = 1;');
 
-      const result = await findSourceFile('./lib/utils.js', tempDir);
+      const result = findSourceFile('./lib/utils.js', tempDir);
       expect(result).toBe('./src/utils.ts');
     });
 
@@ -28,7 +28,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'helper.ts'), 'export const test = 1;');
 
-      const result = await findSourceFile('./dist/helper.js', tempDir);
+      const result = findSourceFile('./dist/helper.js', tempDir);
       expect(result).toBe('./src/helper.ts');
     });
 
@@ -39,7 +39,7 @@ describe('findSourceFile', () => {
         'export const Component = () => {};'
       );
 
-      const result = await findSourceFile('./build/component.js', tempDir);
+      const result = findSourceFile('./build/component.js', tempDir);
       expect(result).toBe('./source/component.tsx');
     });
 
@@ -47,7 +47,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'module.ts'), 'export const module = {};');
 
-      const result = await findSourceFile('./out/module.js', tempDir);
+      const result = findSourceFile('./out/module.js', tempDir);
       expect(result).toBe('./src/module.ts');
     });
   });
@@ -57,7 +57,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'index.ts'), 'export * from "./utils";');
 
-      const result = await findSourceFile('./lib/index.js', tempDir);
+      const result = findSourceFile('./lib/index.js', tempDir);
       expect(result).toBe('./src/index.ts');
     });
 
@@ -68,7 +68,7 @@ describe('findSourceFile', () => {
         'export const Component = () => {};'
       );
 
-      const result = await findSourceFile('./dist/component.js', tempDir);
+      const result = findSourceFile('./dist/component.js', tempDir);
       expect(result).toBe('./source/component.jsx');
     });
 
@@ -77,7 +77,7 @@ describe('findSourceFile', () => {
       await writeFile(join(tempDir, 'src', 'utils.ts'), 'export const test = 1;');
       await writeFile(join(tempDir, 'src', 'utils.js'), 'export const test = 1;');
 
-      const result = await findSourceFile('./lib/utils.js', tempDir);
+      const result = findSourceFile('./lib/utils.js', tempDir);
       expect(result).toBe('./src/utils.ts');
     });
   });
@@ -87,7 +87,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src', 'components'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'components', 'index.ts'), 'export * from "./Button";');
 
-      const result = await findSourceFile('./lib/components/index.js', tempDir);
+      const result = findSourceFile('./lib/components/index.js', tempDir);
       expect(result).toBe('./src/components/index.ts');
     });
 
@@ -95,7 +95,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src', 'utils'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'utils', 'index.tsx'), 'export const utils = {};');
 
-      const result = await findSourceFile('./lib/utils', tempDir);
+      const result = findSourceFile('./lib/utils', tempDir);
       expect(result).toBe('./src/utils/index.tsx');
     });
   });
@@ -105,7 +105,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'types.ts'), 'export interface User {}');
 
-      const result = await findSourceFile('./lib/types.d.ts', tempDir);
+      const result = findSourceFile('./lib/types.d.ts', tempDir);
       expect(result).toBe('./src/types.ts');
     });
 
@@ -113,7 +113,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'App.tsx'), 'export const App = () => <div />;');
 
-      const result = await findSourceFile('./lib/App.js', tempDir);
+      const result = findSourceFile('./lib/App.js', tempDir);
       expect(result).toBe('./src/App.tsx');
     });
 
@@ -121,14 +121,14 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'Component.jsx'), 'export const Component = () => {};');
 
-      const result = await findSourceFile('./lib/Component.js', tempDir);
+      const result = findSourceFile('./lib/Component.js', tempDir);
       expect(result).toBe('./src/Component.jsx');
     });
   });
 
   describe('edge cases', () => {
     test('returns null when no source file exists', async () => {
-      const result = await findSourceFile('./lib/nonexistent.js', tempDir);
+      const result = findSourceFile('./lib/nonexistent.js', tempDir);
       expect(result).toBeNull();
     });
 
@@ -136,7 +136,7 @@ describe('findSourceFile', () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });
       await writeFile(join(tempDir, 'src', 'utils.ts'), 'export const test = 1;');
 
-      const result = await findSourceFile('lib/utils.js', tempDir);
+      const result = findSourceFile('lib/utils.js', tempDir);
       expect(result).toBe('./src/utils.ts');
     });
 
@@ -147,7 +147,7 @@ describe('findSourceFile', () => {
         'export const test = 1;'
       );
 
-      const result = await findSourceFile('./lib/deep/nested/module.js', tempDir);
+      const result = findSourceFile('./lib/deep/nested/module.js', tempDir);
       expect(result).toBe('./src/deep/nested/module.ts');
     });
   });
@@ -169,25 +169,25 @@ describe('findSourceFromPackageJson', () => {
     await writeFile(join(tempDir, 'src', 'index.ts'), 'export const test = 1;');
 
     const packageJson = { source: 'src/index.ts' };
-    const result = await findSourceFromPackageJson(packageJson, tempDir);
+    const result = findSourceFromPackageJson(packageJson, tempDir);
     expect(result).toBe('./src/index.ts');
   });
 
   test('returns null when source field is missing', async () => {
     const packageJson = {};
-    const result = await findSourceFromPackageJson(packageJson, tempDir);
+    const result = findSourceFromPackageJson(packageJson, tempDir);
     expect(result).toBeNull();
   });
 
   test('returns null when source field is not a string', async () => {
     const packageJson = { source: 123 };
-    const result = await findSourceFromPackageJson(packageJson, tempDir);
+    const result = findSourceFromPackageJson(packageJson, tempDir);
     expect(result).toBeNull();
   });
 
   test('returns null when source file does not exist', async () => {
     const packageJson = { source: 'src/nonexistent.ts' };
-    const result = await findSourceFromPackageJson(packageJson, tempDir);
+    const result = findSourceFromPackageJson(packageJson, tempDir);
     expect(result).toBeNull();
   });
 });

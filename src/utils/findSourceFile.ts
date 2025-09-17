@@ -26,12 +26,9 @@ const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.jsx', '.js'];
  * Finds the corresponding source file for a given target path
  * @param targetPath - The compiled/built file path to find source for
  * @param packageDir - Directory containing the package
- * @returns Promise resolving to normalized source path or null if not found
+ * @returns Normalized source path or null if not found
  */
-export async function findSourceFile(
-  targetPath: string,
-  packageDir: string
-): Promise<string | null> {
+export function findSourceFile(targetPath: string, packageDir: string): string | null {
   // Remove leading './' if present
   const cleanPath = targetPath.startsWith('./') ? targetPath.slice(2) : targetPath;
 
@@ -39,7 +36,7 @@ export async function findSourceFile(
   for (const mapping of SOURCE_MAPPINGS) {
     if (cleanPath.includes(mapping.from)) {
       const mappedPath = cleanPath.replace(mapping.from, mapping.to);
-      const sourceFile = await tryFindSourceFile(mappedPath, packageDir);
+      const sourceFile = tryFindSourceFile(mappedPath, packageDir);
       if (sourceFile) {
         return sourceFile;
       }
@@ -53,7 +50,7 @@ export async function findSourceFile(
       .replace(/^(lib|dist|build|out)\//, '')
       .replace(/\.(js|mjs|cjs|d\.ts)$/, '');
 
-    const sourceFile = await tryFindSourceFile(`${sourceDir}/${baseName}`, packageDir);
+    const sourceFile = tryFindSourceFile(`${sourceDir}/${baseName}`, packageDir);
     if (sourceFile) {
       return sourceFile;
     }
@@ -68,7 +65,7 @@ export async function findSourceFile(
  * @param packageDir - Package directory
  * @returns Normalized relative path if found, null otherwise
  */
-async function tryFindSourceFile(basePath: string, packageDir: string): Promise<string | null> {
+function tryFindSourceFile(basePath: string, packageDir: string): string | null {
   // Try with different extensions
   for (const ext of SOURCE_EXTENSIONS) {
     const fullPath = join(packageDir, `${basePath}${ext}`);
@@ -94,10 +91,10 @@ async function tryFindSourceFile(basePath: string, packageDir: string): Promise<
  * @param packageDir - Package directory
  * @returns Normalized source path or null if not found/specified
  */
-export async function findSourceFromPackageJson(
+export function findSourceFromPackageJson(
   packageJson: Record<string, unknown>,
   packageDir: string
-): Promise<string | null> {
+): string | null {
   if (packageJson.source && typeof packageJson.source === 'string') {
     const sourcePath = join(packageDir, packageJson.source);
     if (existsSync(sourcePath)) {

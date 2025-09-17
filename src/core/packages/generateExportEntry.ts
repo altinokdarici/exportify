@@ -17,6 +17,9 @@ export async function generateExportEntry(
 
   // Try to detect the actual file structure
   const possibleExtensions = ['', '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs'];
+  // Updated possibleBases: removed 'src' (source files are not expected in build output),
+  // and added 'build' and 'out' to support additional common build output directories.
+  // This ensures we only search in directories where compiled files are likely to be found.
   const possibleBases = ['lib', 'dist', 'build', 'out'];
 
   let foundFile: string | null = null;
@@ -54,7 +57,7 @@ export async function generateExportEntry(
     }
 
     // Try to find source file
-    const sourceFile = await findSourceFile(jsPath, packagePath);
+    const sourceFile = findSourceFile(jsPath, packagePath);
     if (sourceFile) {
       exportEntry.source = sourceFile;
     }
@@ -102,7 +105,7 @@ export async function generateExportEntry(
 
   // Try to find source file for fallback case
   const fallbackJsPath = `./lib/${cleanPath}.js`;
-  const fallbackSourceFile = await findSourceFile(fallbackJsPath, packagePath);
+  const fallbackSourceFile = findSourceFile(fallbackJsPath, packagePath);
 
   const fallbackEntry: Record<string, string> = {};
   if (fallbackSourceFile) {
