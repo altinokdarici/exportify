@@ -37,8 +37,9 @@ export async function analyzeFileImports(
         ? importPath.split('/').slice(0, 2).join('/') // Scoped packages: @scope/name
         : importPath.split('/')[0]; // Regular packages: name
 
-      // If we have target packages, only process those
-      if (targetPackages.size > 0 && !targetPackages.has(packageName)) {
+      // Only process packages that are in our target set
+      // If targetPackages is empty, we track nothing (not everything)
+      if (targetPackages.size === 0 || !targetPackages.has(packageName)) {
         continue;
       }
 
