@@ -141,6 +141,61 @@ describe('generateExportEntry', () => {
     });
   });
 
+  describe('enhanced source inference', () => {
+    test('infers from multiple source directories', async () => {
+      await mkdir(join(tempDir, 'source'), { recursive: true });
+      await writeFile(join(tempDir, 'source', 'api.ts'), 'export interface API {}');
+
+      const result = await generateExportEntry('./api', tempDir);
+      expect(result).toHaveProperty('source', './source/api.ts');
+      expect(result).toHaveProperty('types');
+      expect(result).toHaveProperty('import');
+      expect(result).toHaveProperty('default');
+    });
+
+    test('handles JSX files correctly', async () => {
+      await mkdir(join(tempDir, 'src'), { recursive: true });
+      await writeFile(
+        join(tempDir, 'src', 'component.tsx'),
+        'export const Component = () => <div />;'
+      );
+
+      const result = await generateExportEntry('./component', tempDir);
+      expect(result).toHaveProperty('source', './src/component.tsx');
+      expect(result).toHaveProperty('types');
+      expect(result).toHaveProperty('import');
+      expect(result).toHaveProperty('default');
+    });
+
+    test('tries multiple output directories for inference', async () => {
+      await mkdir(join(tempDir, 'src'), { recursive: true });
+      await writeFile(join(tempDir, 'src', 'service.ts'), 'export class Service {}');
+
+      const result = await generateExportEntry('./service', tempDir);
+      // Should find source and infer appropriate build output
+      expect(result).toHaveProperty('source', './src/service.ts');
+      expect(result).toHaveProperty('types');
+      expect(result).toHaveProperty('default');
+
+      // The default path should be one of the common build directories
+      const defaultPath = (result as Record<string, string>).default;
+      expect(defaultPath).toMatch(/\.\/(lib|dist|build|out)\/service\.js/);
+    });
+
+    test('infers nested directory structures', async () => {
+      await mkdir(join(tempDir, 'src', 'utils', 'helpers'), { recursive: true });
+      await writeFile(
+        join(tempDir, 'src', 'utils', 'helpers', 'formatter.ts'),
+        'export const format = () => {};'
+      );
+
+      const result = await generateExportEntry('./utils/helpers/formatter', tempDir);
+      expect(result).toHaveProperty('source', './src/utils/helpers/formatter.ts');
+      expect(result).toHaveProperty('types');
+      expect(result).toHaveProperty('default');
+    });
+  });
+
   describe('edge cases', () => {
     test('handles path without leading "./"', async () => {
       await mkdir(join(tempDir, 'src'), { recursive: true });

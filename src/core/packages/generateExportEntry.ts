@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { findSourceFile } from '../../utils/findSourceFile.js';
+import { inferExportEntry } from '../../utils/inferSourceFile.js';
 
 /**
  * Generates an export entry for a given import path by finding the actual file
@@ -80,22 +81,10 @@ export async function generateExportEntry(
     return Object.keys(exportEntry).length === 1 ? exportEntry.default : exportEntry;
   }
 
-  // If no file found, try to infer from src -> lib mapping
-  const srcPath = join(packagePath, 'src', `${cleanPath}.ts`);
-  const srcIndexPath = join(packagePath, 'src', cleanPath, 'index.ts');
-
-  if (existsSync(srcPath) || existsSync(srcIndexPath)) {
-    const baseName = existsSync(srcPath) ? cleanPath : `${cleanPath}/index`;
-    const sourceFilePath = existsSync(srcPath)
-      ? `./src/${cleanPath}.ts`
-      : `./src/${cleanPath}/index.ts`;
-
-    return {
-      source: sourceFilePath,
-      types: `./lib/${baseName}.d.ts`,
-      import: `./lib/${baseName}.js`,
-      default: `./lib/${baseName}.js`,
-    };
+  // If no file found, try enhanced source inference
+  const inferredEntry = inferExportEntry(importPath, packagePath);
+  if (inferredEntry) {
+    return inferredEntry;
   }
 
   // Fallback: assume it will exist in lib directory
