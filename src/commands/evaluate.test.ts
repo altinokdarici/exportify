@@ -238,10 +238,7 @@ import something from 'external-package';  // Should be ignored
     );
 
     // Create source file with new import
-    await writeFile(
-      join(testDir, 'src.ts'),
-      `import { feature } from '@company/new';`
-    );
+    await writeFile(join(testDir, 'src.ts'), `import { feature } from '@company/new';`);
 
     await evaluateUsage(testDir, usageFile);
 
