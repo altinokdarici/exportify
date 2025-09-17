@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { findSourceFile } from '../../utils/findSourceFile.js';
 
 /**
  * Generates an export entry for a given import path by finding the actual file
@@ -16,7 +17,7 @@ export async function generateExportEntry(
 
   // Try to detect the actual file structure
   const possibleExtensions = ['', '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs'];
-  const possibleBases = ['lib', 'dist', 'src'];
+  const possibleBases = ['lib', 'dist', 'build', 'out'];
 
   let foundFile: string | null = null;
   let buildDir: string | null = null;
@@ -44,14 +45,28 @@ export async function generateExportEntry(
   if (foundFile && buildDir) {
     const exportEntry: Record<string, string> = {};
 
+    // Generate proper JS path for source detection and exports
+    let jsPath: string;
+    if (foundFile.endsWith('.ts') || foundFile.endsWith('.tsx')) {
+      jsPath = `./${buildDir}/${foundFile.replace(/\.tsx?$/, '.js')}`;
+    } else {
+      jsPath = `./${buildDir}/${foundFile}`;
+    }
+
+    // Try to find source file
+    const sourceFile = await findSourceFile(jsPath, packagePath);
+    if (sourceFile) {
+      exportEntry.source = sourceFile;
+    }
+
     // Check for TypeScript types
-    const typesPath = join(packagePath, buildDir, foundFile.replace(/\.(js|mjs|cjs)$/, '.d.ts'));
+    const typesFile = foundFile.replace(/\.(js|mjs|cjs|ts|tsx)$/, '.d.ts');
+    const typesPath = join(packagePath, buildDir, typesFile);
     if (existsSync(typesPath)) {
-      exportEntry.types = `./${buildDir}/${foundFile.replace(/\.(js|mjs|cjs)$/, '.d.ts')}`;
+      exportEntry.types = `./${buildDir}/${typesFile}`;
     }
 
     // Add the main export
-    const jsPath = `./${buildDir}/${foundFile.replace(/\.ts$/, '.js')}`;
     exportEntry.default = jsPath;
 
     // For TypeScript files, assume they'll be compiled to JS
@@ -68,7 +83,12 @@ export async function generateExportEntry(
 
   if (existsSync(srcPath) || existsSync(srcIndexPath)) {
     const baseName = existsSync(srcPath) ? cleanPath : `${cleanPath}/index`;
+    const sourceFilePath = existsSync(srcPath)
+      ? `./src/${cleanPath}.ts`
+      : `./src/${cleanPath}/index.ts`;
+
     return {
+      source: sourceFilePath,
       types: `./lib/${baseName}.d.ts`,
       import: `./lib/${baseName}.js`,
       default: `./lib/${baseName}.js`,
@@ -79,8 +99,17 @@ export async function generateExportEntry(
   console.warn(
     `Warning: Could not find file for import path "${importPath}" in package at ${packagePath}`
   );
-  return {
-    types: `./lib/${cleanPath}.d.ts`,
-    default: `./lib/${cleanPath}.js`,
-  };
+
+  // Try to find source file for fallback case
+  const fallbackJsPath = `./lib/${cleanPath}.js`;
+  const fallbackSourceFile = await findSourceFile(fallbackJsPath, packagePath);
+
+  const fallbackEntry: Record<string, string> = {};
+  if (fallbackSourceFile) {
+    fallbackEntry.source = fallbackSourceFile;
+  }
+  fallbackEntry.types = `./lib/${cleanPath}.d.ts`;
+  fallbackEntry.default = fallbackJsPath;
+
+  return fallbackEntry;
 }

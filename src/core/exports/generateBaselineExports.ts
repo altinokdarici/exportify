@@ -2,6 +2,7 @@ import type { ExportsMap } from '../../types.js';
 import { detectModuleType } from '../analysis/detectModuleType.js';
 import { parseBrowserField } from '../../utils/parseBrowserField.js';
 import { normalizeRelativePath } from '../../utils/normalizeRelativePath.js';
+import { findSourceFile, findSourceFromPackageJson } from '../../utils/findSourceFile.js';
 
 type ExportConditions = Record<string, string>;
 
@@ -17,6 +18,12 @@ export async function generateBaselineExports(
 ): Promise<ExportsMap> {
   const exportsMap: ExportsMap = {};
   const rootExport: ExportConditions = {};
+
+  // Check for source field in package.json first
+  const packageJsonSource = await findSourceFromPackageJson(packageJson, packageDir);
+  if (packageJsonSource) {
+    rootExport.source = packageJsonSource;
+  }
 
   // Handle types field first (should come first in exports)
   if (
@@ -38,12 +45,28 @@ export async function generateBaselineExports(
     if (moduleType === 'cjs' || moduleType === 'unknown') {
       rootExport.require = mainPath;
     }
+
+    // Try to find source file for main field if not already set
+    if (!rootExport.source) {
+      const sourceFile = await findSourceFile(mainPath, packageDir);
+      if (sourceFile) {
+        rootExport.source = sourceFile;
+      }
+    }
   }
 
   // Handle module field (always ESM)
   if (packageJson.module && typeof packageJson.module === 'string') {
     const modulePath = normalizeRelativePath(packageJson.module);
     rootExport.import = modulePath;
+
+    // Try to find source file for module field if not already set
+    if (!rootExport.source) {
+      const sourceFile = await findSourceFile(modulePath, packageDir);
+      if (sourceFile) {
+        rootExport.source = sourceFile;
+      }
+    }
   }
 
   // Handle browser field with complex logic
@@ -78,11 +101,19 @@ export async function generateBaselineExports(
           // Maps to root export with browser condition
           rootExport.browser = value;
         } else {
-          // Treat as separate export entry
-          exportsMap[key] = {
-            browser: value,
-            default: key,
-          };
+          // Treat as separate export entry with source detection
+          const exportEntry: ExportConditions = {};
+
+          // Try to find source file for this export
+          const sourceFile = await findSourceFile(key, packageDir);
+          if (sourceFile) {
+            exportEntry.source = sourceFile;
+          }
+
+          exportEntry.browser = value;
+          exportEntry.default = key;
+
+          exportsMap[key] = exportEntry;
         }
       }
     }
@@ -90,8 +121,9 @@ export async function generateBaselineExports(
 
   // Set the root export if we have any conditions
   if (Object.keys(rootExport).length > 0) {
-    // Order conditions properly: types, import, require, browser, default
+    // Order conditions properly: source, types, import, require, browser, default
     const orderedExport: ExportConditions = {};
+    if (rootExport.source) orderedExport.source = rootExport.source;
     if (rootExport.types) orderedExport.types = rootExport.types;
     if (rootExport.import) orderedExport.import = rootExport.import;
     if (rootExport.require) orderedExport.require = rootExport.require;
