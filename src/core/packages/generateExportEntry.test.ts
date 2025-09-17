@@ -178,7 +178,7 @@ describe('generateExportEntry', () => {
       expect(result).toHaveProperty('default');
 
       // The default path should be one of the common build directories
-      const defaultPath = (result as any).default;
+      const defaultPath = (result as Record<string, string>).default;
       expect(defaultPath).toMatch(/\.\/(lib|dist|build|out)\/service\.js/);
     });
 

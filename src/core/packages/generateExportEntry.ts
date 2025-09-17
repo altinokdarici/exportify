@@ -84,7 +84,6 @@ export async function generateExportEntry(
   // If no file found, try enhanced source inference
   const inferredEntry = inferExportEntry(importPath, packagePath);
   if (inferredEntry) {
-    console.log(`Inferred export entry for ${importPath} in ${packagePath} from source file`);
     return inferredEntry;
   }
 
