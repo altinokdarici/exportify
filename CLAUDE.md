@@ -213,3 +213,79 @@ When modifying files, consider these dependencies:
 - Validate all file paths to prevent directory traversal
 - Use proper file permissions when creating temporary files
 - Be cautious with dynamic imports and file system operations
+
+## GitHub Issue Workflow
+
+When working on GitHub issues, follow this standardized workflow:
+
+### 1. Branch Creation
+```bash
+# Start from main and pull latest
+git checkout main
+git pull origin main
+
+# Create feature branch with issue number and descriptive name
+git checkout -b issue-{number}-{descriptive-kebab-case-name}
+# Examples:
+# - issue-16-version-tracking-enhancement
+# - issue-17-browser-field-handling
+# - issue-18-source-file-inference
+```
+
+### 2. Implementation Process
+1. **Analyze the issue requirements** thoroughly
+2. **Implement the functionality** following the architecture patterns
+3. **Write comprehensive tests** (unit + integration)
+4. **Update documentation** if needed
+
+### 3. Quality Validation (Run ALL)
+```bash
+# Type checking
+npm run typecheck
+
+# Linting and formatting
+npm run lint
+npm run format
+
+# Build verification
+npm run build
+
+# Test suite
+npm test
+```
+
+### 4. Commit and PR Creation
+```bash
+# Commit with descriptive message
+git add .
+git commit -m "feat: implement [feature description]
+
+- Add [specific implementation details]
+- Include comprehensive test coverage
+- [Any other relevant details]
+
+Fixes #[issue-number]
+
+🤖 Generated with Claude Code"
+
+# Push branch
+git push -u origin [branch-name]
+```
+
+Then use GitHub MCP tools to create PR:
+- Use `mcp__github__create_pull_request` to create PR programmatically
+- Automatically link to the issue with proper formatting
+- Include comprehensive description and test plan
+
+### 5. PR Requirements
+- **Title**: Clear description of the change
+- **Body**: Link to issue with `Fixes #[number]`
+- **Tests**: All new functionality must have tests
+- **Quality**: All validation checks must pass
+- **Documentation**: Update relevant docs if needed
+
+### Branch Naming Conventions
+- `issue-{number}-{feature-name}` for new features
+- `issue-{number}-fix-{bug-name}` for bug fixes
+- `issue-{number}-refactor-{component}` for refactoring
+- Use kebab-case for readability
