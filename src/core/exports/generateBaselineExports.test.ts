@@ -248,4 +248,179 @@ describe('generateBaselineExports', () => {
       default: './lib/index.cjs',
     });
   });
+
+  describe('source condition support', () => {
+    it('adds source condition from package.json source field', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await writeFile(join(testDir, 'src/index.ts'), 'export const test = 1;');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        source: 'src/index.ts',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          source: './src/index.ts',
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+        },
+      });
+    });
+
+    it('discovers source file from main field mapping', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'src/index.ts'), 'export const test = 1;');
+      await writeFile(join(testDir, 'lib/index.js'), 'module.exports = {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          source: './src/index.ts',
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+        },
+      });
+    });
+
+    it('discovers source file from module field mapping', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'src/index.ts'), 'export const test = 1;');
+      await writeFile(join(testDir, 'lib/index.mjs'), 'export {};');
+
+      const packageJson = {
+        name: 'test',
+        module: 'lib/index.mjs',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          source: './src/index.ts',
+          types: './lib/index.d.ts',
+          import: './lib/index.mjs',
+        },
+      });
+    });
+
+    it('prefers package.json source field over discovered source', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await mkdir(join(testDir, 'source'), { recursive: true });
+      await writeFile(join(testDir, 'src/index.ts'), 'export const test = 1;');
+      await writeFile(join(testDir, 'source/main.ts'), 'export const main = 1;');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        source: 'source/main.ts',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          source: './source/main.ts',
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+        },
+      });
+    });
+
+    it('adds source condition to browser field entries', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await writeFile(join(testDir, 'src/utils.ts'), 'export const utils = {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        browser: {
+          './lib/utils.js': './lib/browser-utils.js',
+        },
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+        },
+        './lib/utils.js': {
+          source: './src/utils.ts',
+          browser: './lib/browser-utils.js',
+          default: './lib/utils.js',
+        },
+      });
+    });
+
+    it('orders conditions correctly with source first', async () => {
+      await mkdir(join(testDir, 'src'), { recursive: true });
+      await mkdir(join(testDir, 'lib'), { recursive: true });
+      await writeFile(join(testDir, 'src/index.ts'), 'export const test = 1;');
+      await writeFile(join(testDir, 'lib/index.cjs'), 'module.exports = {};');
+      await writeFile(join(testDir, 'lib/index.mjs'), 'export {};');
+
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.cjs',
+        module: 'lib/index.mjs',
+        browser: 'lib/browser.js',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      const rootExport = result['.'] as Record<string, string>;
+      const keys = Object.keys(rootExport);
+      expect(keys).toEqual(['source', 'types', 'import', 'require', 'browser', 'default']);
+
+      expect(rootExport).toEqual({
+        source: './src/index.ts',
+        types: './lib/index.d.ts',
+        import: './lib/index.mjs',
+        require: './lib/index.cjs',
+        browser: './lib/browser.js',
+        default: './lib/index.cjs',
+      });
+    });
+
+    it('skips source condition when no source file found', async () => {
+      const packageJson = {
+        name: 'test',
+        main: 'lib/index.js',
+        types: 'lib/index.d.ts',
+      };
+
+      const result = await generateBaselineExports(packageJson, testDir);
+
+      expect(result).toEqual({
+        '.': {
+          types: './lib/index.d.ts',
+          require: './lib/index.js',
+          default: './lib/index.js',
+        },
+      });
+    });
+  });
 });
