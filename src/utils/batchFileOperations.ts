@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join, relative } from 'path';
 import { readdirSync, statSync } from 'fs';
 import { fileExistsSync, batchFileExists } from './fileExists.js';
 import {
@@ -433,7 +433,7 @@ export async function createFileCache(
     try {
       const files = getAllFilesRecursive(dirPath);
       for (const file of files) {
-        const relativePath = file.replace(packageDir + '/', '');
+        const relativePath = relative(packageDir, file);
         cache.set(relativePath, true);
       }
     } catch {

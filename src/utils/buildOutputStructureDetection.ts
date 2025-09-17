@@ -44,6 +44,7 @@ export const COMMON_BUILD_DIRS = [
   'out',
   'output',
   'compiled',
+  'types',
   'esm',
   'cjs',
   'umd',

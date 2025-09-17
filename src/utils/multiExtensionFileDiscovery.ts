@@ -1,4 +1,4 @@
-import { join, dirname, basename, extname } from 'path';
+import { join, dirname, basename, extname, relative } from 'path';
 import { fileExistsSync, findIndexFile } from './fileExists.js';
 
 /**
@@ -91,7 +91,19 @@ export function discoverFiles(
   const { dir, baseName } = parseTargetPath(cleanPath);
 
   for (const searchDir of config.searchDirs) {
-    const searchPath = config.preserveStructure && dir ? join(searchDir, dir) : searchDir;
+    // If target path already starts with this search directory, use it directly
+    let searchPath: string;
+    if (config.preserveStructure && dir) {
+      if (dir.startsWith(searchDir) && (dir === searchDir || dir.startsWith(searchDir + '/'))) {
+        // Target path already includes this search directory
+        searchPath = dir;
+      } else {
+        // Add search directory prefix
+        searchPath = join(searchDir, dir);
+      }
+    } else {
+      searchPath = searchDir;
+    }
 
     // Try each extension
     for (const ext of config.extensions) {
@@ -117,7 +129,7 @@ export function discoverFiles(
       if (fileExistsSync(fullDirPath).type === 'directory') {
         const indexFile = findIndexFile(fullDirPath, config.extensions);
         if (indexFile) {
-          const relativePath = indexFile.replace(packageDir + '/', '');
+          const relativePath = relative(packageDir, indexFile);
           return {
             filePath: relativePath,
             discoveryType: 'index',
@@ -202,7 +214,7 @@ export function resolveModulePath(
     if (fileExistsSync(dirPath).type === 'directory') {
       const indexFile = findIndexFile(dirPath, config.extensions);
       if (indexFile) {
-        return indexFile.replace(packageDir + '/', '');
+        return relative(packageDir, indexFile);
       }
     }
   }
@@ -226,7 +238,19 @@ export function getFileVariations(
   const { dir, baseName } = parseTargetPath(cleanPath);
 
   for (const searchDir of config.searchDirs) {
-    const searchPath = config.preserveStructure && dir ? join(searchDir, dir) : searchDir;
+    // If target path already starts with this search directory, use it directly
+    let searchPath: string;
+    if (config.preserveStructure && dir) {
+      if (dir.startsWith(searchDir) && (dir === searchDir || dir.startsWith(searchDir + '/'))) {
+        // Target path already includes this search directory
+        searchPath = dir;
+      } else {
+        // Add search directory prefix
+        searchPath = join(searchDir, dir);
+      }
+    } else {
+      searchPath = searchDir;
+    }
 
     // Add extension variations
     for (const ext of config.extensions) {

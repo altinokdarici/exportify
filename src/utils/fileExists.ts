@@ -1,4 +1,5 @@
 import { existsSync, statSync } from 'fs';
+import { stat } from 'fs/promises';
 import { join } from 'path';
 
 /**
@@ -17,7 +18,7 @@ export interface FileExistsResult {
  */
 export async function fileExists(filePath: string): Promise<boolean> {
   try {
-    const stats = statSync(filePath);
+    const stats = await stat(filePath);
     return stats.isFile();
   } catch {
     return false;
@@ -31,7 +32,7 @@ export async function fileExists(filePath: string): Promise<boolean> {
  */
 export async function directoryExists(dirPath: string): Promise<boolean> {
   try {
-    const stats = statSync(dirPath);
+    const stats = await stat(dirPath);
     return stats.isDirectory();
   } catch {
     return false;

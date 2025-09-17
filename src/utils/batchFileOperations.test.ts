@@ -40,11 +40,11 @@ describe('Batch file operations', () => {
 
       const utilsResult = result.results.find((r) => r.input === 'utils');
       expect(utilsResult?.success).toBe(true);
-      expect((utilsResult?.result as any)?.filePath).toBe('lib/utils.js');
+      expect(utilsResult?.result).toMatchObject({ filePath: 'lib/utils.js' });
 
       const helperResult = result.results.find((r) => r.input === 'helper');
       expect(helperResult?.success).toBe(true);
-      expect((helperResult?.result as any)?.filePath).toBe('lib/helper.ts');
+      expect(helperResult?.result).toMatchObject({ filePath: 'lib/helper.ts' });
 
       const nonexistentResult = result.results.find((r) => r.input === 'nonexistent');
       expect(nonexistentResult?.success).toBe(false);
@@ -139,11 +139,11 @@ describe('Batch file operations', () => {
 
       const utilsResult = result.results.find((r) => r.input === 'lib/utils.js');
       expect(utilsResult?.success).toBe(true);
-      expect((utilsResult?.result as any)?.declarationPath).toBe('lib/utils.d.ts');
+      expect(utilsResult?.result).toMatchObject({ declarationPath: 'lib/utils.d.ts' });
 
       const helperResult = result.results.find((r) => r.input === 'lib/helper.js');
       expect(helperResult?.success).toBe(true);
-      expect((helperResult?.result as any)?.declarationPath).toBe('lib/helper.d.ts');
+      expect(helperResult?.result).toMatchObject({ declarationPath: 'lib/helper.d.ts' });
     });
   });
 
