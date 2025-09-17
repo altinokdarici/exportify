@@ -264,9 +264,9 @@ describe('generateBaselineExports', () => {
         main: 'lib/index.cjs',
         module: 'lib/index.mjs',
         browser: {
-          './lib/index.cjs': './lib/browser.cjs',      // replaces main
-          './lib/utils.js': './lib/browser-utils.js',  // separate export
-          './lib/node-only.js': false,                 // blocked in browser
+          './lib/index.cjs': './lib/browser.cjs', // replaces main
+          './lib/utils.js': './lib/browser-utils.js', // separate export
+          './lib/node-only.js': false, // blocked in browser
         },
         types: 'lib/index.d.ts',
       };
@@ -302,8 +302,8 @@ describe('generateBaselineExports', () => {
         main: 'lib/index.cjs',
         module: 'lib/index.mjs',
         browser: {
-          './lib/index.mjs': './lib/browser.mjs',      // replaces module
-          './lib/utils.js': './lib/browser-utils.js',  // separate export
+          './lib/index.mjs': './lib/browser.mjs', // replaces module
+          './lib/utils.js': './lib/browser-utils.js', // separate export
         },
         types: 'lib/index.d.ts',
       };
@@ -334,8 +334,8 @@ describe('generateBaselineExports', () => {
         name: 'test',
         main: 'lib/index.js',
         browser: {
-          './lib/index.js': false,                     // block main in browser
-          './lib/utils.js': './lib/browser-utils.js',  // separate export
+          './lib/index.js': false, // block main in browser
+          './lib/utils.js': './lib/browser-utils.js', // separate export
         },
         types: 'lib/index.d.ts',
       };
@@ -363,9 +363,9 @@ describe('generateBaselineExports', () => {
 
       const packageJson = {
         name: 'test',
-        main: 'lib/index.js',              // no ./ prefix
+        main: 'lib/index.js', // no ./ prefix
         browser: {
-          './lib/index.js': './lib/browser.js',  // with ./ prefix - should still match
+          './lib/index.js': './lib/browser.js', // with ./ prefix - should still match
           './lib/utils.js': './lib/browser-utils.js',
         },
         types: 'lib/index.d.ts',
