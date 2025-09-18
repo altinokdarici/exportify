@@ -2,6 +2,8 @@ import { readFile } from 'fs/promises';
 import type { ExportsMap, PackageUsage } from '../../types.js';
 import { generateBaselineExports } from './generateBaselineExports.js';
 import { generateExportEntry } from '../packages/generateExportEntry.js';
+import { detectBuildPattern } from '../analysis/detectBuildPattern.js';
+import { expandUsageWithPattern } from './expandUsageWithPattern.js';
 
 export interface PackageInfo {
   name: string;
@@ -31,6 +33,12 @@ export async function generateExportsMap(
     exportsMap = { ...packageJson.exports };
   }
 
+  // Detect build pattern for enhanced export generation
+  const buildPattern = detectBuildPattern(
+    packageJson.main as string | undefined,
+    packageJson.module as string | undefined
+  );
+
   // Add exports for usage-based import paths (only if they don't already exist)
   for (const importPath of usage.importPaths) {
     if (importPath === '.' && exportsMap['.']) {
@@ -42,10 +50,19 @@ export async function generateExportsMap(
       continue; // Skip if export already exists
     }
 
-    const exportEntry = await generateExportEntry(importPath, pkg.path);
+    // Try pattern-based expansion first
+    let exportEntry = null;
+    if (buildPattern.hasMultipleBuilds) {
+      exportEntry = expandUsageWithPattern(importPath, buildPattern, pkg.path);
+    }
+
+    // Fall back to traditional export entry generation if pattern expansion didn't work
+    if (!exportEntry) {
+      exportEntry = await generateExportEntry(importPath, pkg.path);
+    }
+
     if (exportEntry) {
       exportsMap[importPath] = exportEntry;
-      console.log(`Added new export ${importPath} for ${pkg.name}`);
     }
   }
 

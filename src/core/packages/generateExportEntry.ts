@@ -93,14 +93,35 @@ export async function generateExportEntry(
   );
 
   // Try to find source file for fallback case
-  const fallbackJsPath = `./lib/${cleanPath}.js`;
+  // Check if cleanPath already includes a build directory
+  let fallbackJsPath: string;
+  let fallbackTypesPath: string;
+
+  if (
+    cleanPath.startsWith('lib/') ||
+    cleanPath.startsWith('dist/') ||
+    cleanPath.startsWith('build/') ||
+    cleanPath.startsWith('out/')
+  ) {
+    // Path already includes build directory
+    fallbackJsPath = `./${cleanPath}`;
+    if (!fallbackJsPath.endsWith('.js')) {
+      fallbackJsPath += '.js';
+    }
+    fallbackTypesPath = `./${cleanPath.replace(/\.m?js$/, '.d.ts')}`;
+  } else {
+    // Assume lib directory
+    fallbackJsPath = `./lib/${cleanPath}.js`;
+    fallbackTypesPath = `./lib/${cleanPath}.d.ts`;
+  }
+
   const fallbackSourceFile = findSourceFile(fallbackJsPath, packagePath);
 
   const fallbackEntry: Record<string, string> = {};
   if (fallbackSourceFile) {
     fallbackEntry.source = fallbackSourceFile;
   }
-  fallbackEntry.types = `./lib/${cleanPath}.d.ts`;
+  fallbackEntry.types = fallbackTypesPath;
   fallbackEntry.default = fallbackJsPath;
 
   return fallbackEntry;
