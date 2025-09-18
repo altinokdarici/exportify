@@ -54,17 +54,11 @@ export async function generateExportsMap(
     let exportEntry = null;
     if (buildPattern.hasMultipleBuilds) {
       exportEntry = expandUsageWithPattern(importPath, buildPattern, pkg.path);
-      if (exportEntry) {
-        console.log(`Added pattern-expanded export ${importPath} for ${pkg.name}`);
-      }
     }
 
     // Fall back to traditional export entry generation if pattern expansion didn't work
     if (!exportEntry) {
       exportEntry = await generateExportEntry(importPath, pkg.path);
-      if (exportEntry) {
-        console.log(`Added standard export ${importPath} for ${pkg.name}`);
-      }
     }
 
     if (exportEntry) {

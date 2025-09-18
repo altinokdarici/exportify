@@ -271,11 +271,11 @@ function isEsmIdentifier(str: string): boolean {
 }
 
 function isCjsExtension(ext: string): boolean {
-  return ext === '.cjs' || ext === '.js'; // .js can be CJS depending on context
+  return ext === '.cjs';
 }
 
 function isEsmExtension(ext: string): boolean {
-  return ext === '.mjs' || ext === '.js'; // .js can be ESM depending on context
+  return ext === '.mjs';
 }
 
 function getFileExtension(path: string): string {
